@@ -9,40 +9,45 @@ struct WorkoutPlanView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Current Plan Section
-                    if let plan = workoutManager.workoutPlan {
-                        CurrentPlanSection(plan: plan)
+            GeometryReader { geometry in
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // Current Plan Section
+                        if let plan = workoutManager.workoutPlan {
+                            CurrentPlanSection(plan: plan)
+                        }
+                        
+                        // Import Section
+                        ImportSection(
+                            showingMarkupInput: $showingMarkupInput,
+                            markupText: $markupText,
+                            onImport: importWorkoutPlan
+                        )
+                        
+                        // Instructions Section
+                        InstructionsSection()
+                        
+                        Spacer()
                     }
-                    
-                    // Import Section
-                    ImportSection(
-                        showingMarkupInput: $showingMarkupInput,
+                    .frame(minHeight: geometry.size.height)
+                    .padding(.top)
+                }
+                .navigationTitle("Workout Plan")
+                .sheet(isPresented: $showingMarkupInput) {
+                    MarkupInputView(
                         markupText: $markupText,
                         onImport: importWorkoutPlan
                     )
-                    
-                    // Instructions Section
-                    InstructionsSection()
-                    
-                    Spacer(minLength: 100)
                 }
-                .padding(.top)
+                .alert("Import Result", isPresented: $showingAlert) {
+                    Button("OK") { }
+                } message: {
+                    Text(alertMessage)
+                }
             }
-            .navigationTitle("Workout Plan")
-            .sheet(isPresented: $showingMarkupInput) {
-                MarkupInputView(
-                    markupText: $markupText,
-                    onImport: importWorkoutPlan
-                )
-            }
-            .alert("Import Result", isPresented: $showingAlert) {
-                Button("OK") { }
-            } message: {
-                Text(alertMessage)
-            }
+            .ignoresSafeArea(.container, edges: .bottom)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private func importWorkoutPlan() {
@@ -61,7 +66,7 @@ struct WorkoutPlanView: View {
     private func parseMarkup(_ markup: String) throws -> WorkoutPlan {
         let lines = markup.components(separatedBy: .newlines)
         var workouts: [Workout] = []
-        var schedule: [String: String] = [:]
+        var schedule: [String: [String]] = [:]
         var currentWorkout: String?
         var currentDay: String?
         var currentExercises: [Exercise] = []
@@ -82,7 +87,11 @@ struct WorkoutPlanView: View {
                         exercises: currentExercises
                     )
                     workouts.append(workout)
-                    schedule[day] = workoutName
+                    if schedule[day] != nil {
+                        schedule[day]?.append(workoutName)
+                    } else {
+                        schedule[day] = [workoutName]
+                    }
                 }
                 
                 // Parse new workout
@@ -122,7 +131,11 @@ struct WorkoutPlanView: View {
                 exercises: currentExercises
             )
             workouts.append(workout)
-            schedule[day] = workoutName
+            if schedule[day] != nil {
+                schedule[day]?.append(workoutName)
+            } else {
+                schedule[day] = [workoutName]
+            }
         }
         
         guard !workouts.isEmpty else {

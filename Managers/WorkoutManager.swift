@@ -53,15 +53,13 @@ class WorkoutManager: ObservableObject {
         return completedWorkouts[dateString] != nil
     }
     
-    // MARK: - Current Day Workout
-    func getCurrentDayWorkout() -> Workout? {
-        guard let plan = workoutPlan else { return nil }
-        
+    // MARK: - Current Day Workouts
+    func getCurrentDayWorkouts() -> [Workout] {
+        guard let plan = workoutPlan else { return [] }
         let calendar = Calendar.current
         let today = Date()
         let dayName = calendar.weekdaySymbols[calendar.component(.weekday, from: today) - 1]
-        
-        return plan.workouts.first { $0.dayOfWeek == dayName }
+        return plan.workouts.filter { $0.dayOfWeek == dayName }
     }
     
     // MARK: - Workout Plan Management
@@ -88,6 +86,10 @@ class WorkoutManager: ObservableObject {
                 Exercise(name: "Push-ups", sets: 3, reps: 10, weight: nil, duration: nil, notes: "Full body push-ups"),
                 Exercise(name: "Pull-ups", sets: 3, reps: 8, weight: nil, duration: nil, notes: "Assisted if needed"),
                 Exercise(name: "Dumbbell Rows", sets: 3, reps: 12, weight: 20.0, duration: nil, notes: "Focus on form")
+            ]),
+            Workout(name: "Cardio Blast", type: "Cardio", dayOfWeek: "Monday", exercises: [
+                Exercise(name: "Running", sets: 1, reps: 1, weight: nil, duration: 1200, notes: "20 minutes fast pace"),
+                Exercise(name: "Jump Rope", sets: 3, reps: 1, weight: nil, duration: 300, notes: "5 minutes each set")
             ]),
             Workout(name: "Lower Body Strength", type: "Strength", dayOfWeek: "Tuesday", exercises: [
                 Exercise(name: "Squats", sets: 3, reps: 15, weight: nil, duration: nil, notes: "Body weight squats"),
@@ -118,14 +120,14 @@ class WorkoutManager: ObservableObject {
             ])
         ]
         
-        let schedule = [
-            "Monday": "Upper Body Strength",
-            "Tuesday": "Lower Body Strength", 
-            "Wednesday": "Cardio",
-            "Thursday": "Core Workout",
-            "Friday": "Full Body",
-            "Saturday": "Yoga",
-            "Sunday": "Rest Day"
+        let schedule: [String: [String]] = [
+            "Monday": ["Upper Body Strength", "Cardio Blast"],
+            "Tuesday": ["Lower Body Strength"],
+            "Wednesday": ["Cardio"],
+            "Thursday": ["Core Workout"],
+            "Friday": ["Full Body"],
+            "Saturday": ["Yoga"],
+            "Sunday": ["Rest Day"]
         ]
         
         return WorkoutPlan(name: "Weekly Fitness Plan", workouts: defaultWorkouts, schedule: schedule)
@@ -143,5 +145,13 @@ class WorkoutManager: ObservableObject {
            let workouts = try? JSONDecoder().decode([String: Date].self, from: data) {
             completedWorkouts = workouts
         }
+    }
+    
+    // MARK: - Workouts for Arbitrary Day
+    func getWorkouts(for date: Date) -> [Workout] {
+        guard let plan = workoutPlan else { return [] }
+        let calendar = Calendar.current
+        let dayName = calendar.weekdaySymbols[calendar.component(.weekday, from: date) - 1]
+        return plan.workouts.filter { $0.dayOfWeek == dayName }
     }
 } 

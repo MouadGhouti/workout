@@ -24,7 +24,7 @@ struct Exercise: Identifiable, Codable {
 struct WorkoutPlan: Codable {
     let name: String
     let workouts: [Workout]
-    let schedule: [String: String] // day of week -> workout name
+    let schedule: [String: [String]] // day of week -> [workout names]
 }
 
 // MARK: - Week Day Model

@@ -5,6 +5,11 @@
 - Dumbbell Rows, sets: 3, reps: 12, weight: 20kg, Focus on form
 - Bench Press, sets: 3, reps: 8, weight: 40kg, Control the movement
 
+# Cardio Blast Saturday
+@ Saturday
+- Running, sets: 1, reps: 1, duration: 20min, Fast pace
+- Jump Rope, sets: 3, reps: 1, duration: 5min, 5 minutes each set
+
 # Lower Body Strength Tuesday
 @ Tuesday
 - Squats, sets: 3, reps: 15, Body weight squats

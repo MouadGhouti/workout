@@ -9,66 +9,71 @@ struct WorkoutDetailView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
-                    // Workout Header
-                    WorkoutHeaderView(workout: workout)
-                    
-                    // Exercises List
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Exercises")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .padding(.horizontal)
+            GeometryReader { geometry in
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // Workout Header
+                        WorkoutHeaderView(workout: workout)
                         
-                        ForEach(workout.exercises) { exercise in
-                            ExerciseRowView(
-                                exercise: exercise,
-                                isCompleted: completedExercises.contains(exercise.id)
-                            ) {
-                                toggleExercise(exercise)
+                        // Exercises List
+                        VStack(alignment: .leading, spacing: 16) {
+                            Text("Exercises")
+                                .font(.title2)
+                                .fontWeight(.bold)
+                                .padding(.horizontal)
+                            
+                            ForEach(workout.exercises) { exercise in
+                                ExerciseRowView(
+                                    exercise: exercise,
+                                    isCompleted: completedExercises.contains(exercise.id)
+                                ) {
+                                    toggleExercise(exercise)
+                                }
                             }
                         }
-                    }
-                    
-                    // Complete Workout Button
-                    if completedExercises.count == workout.exercises.count {
-                        Button(action: completeWorkout) {
-                            HStack {
-                                Image(systemName: "checkmark.circle.fill")
-                                Text("Complete Workout")
-                                    .fontWeight(.semibold)
+                        
+                        // Complete Workout Button
+                        if completedExercises.count == workout.exercises.count {
+                            Button(action: completeWorkout) {
+                                HStack {
+                                    Image(systemName: "checkmark.circle.fill")
+                                    Text("Complete Workout")
+                                        .fontWeight(.semibold)
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.green)
+                                .cornerRadius(12)
                             }
-                            .foregroundColor(.white)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.green)
-                            .cornerRadius(12)
+                            .padding(.horizontal)
                         }
-                        .padding(.horizontal)
+                        
+                        Spacer()
                     }
-                    
-                    Spacer(minLength: 100)
+                    .frame(minHeight: geometry.size.height)
+                    .padding(.top)
                 }
-                .padding(.top)
-            }
-            .navigationTitle("Workout Details")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Done") {
+                .navigationTitle("Workout Details")
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button("Done") {
+                            dismiss()
+                        }
+                    }
+                }
+                .alert("Workout Completed!", isPresented: $showingCompletionAlert) {
+                    Button("Great!") {
                         dismiss()
                     }
+                } message: {
+                    Text("Great job! Your workout has been marked as completed.")
                 }
             }
-            .alert("Workout Completed!", isPresented: $showingCompletionAlert) {
-                Button("Great!") {
-                    dismiss()
-                }
-            } message: {
-                Text("Great job! Your workout has been marked as completed.")
-            }
+            .ignoresSafeArea(.container, edges: .bottom)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private func toggleExercise(_ exercise: Exercise) {
@@ -179,18 +184,20 @@ struct ExerciseRowView: View {
         .padding(.horizontal)
     }
 }
-
-#Preview {
-    let sampleWorkout = Workout(
-        name: "Upper Body Strength",
-        type: "Strength",
-        dayOfWeek: "Monday",
-        exercises: [
-            Exercise(name: "Push-ups", sets: 3, reps: 10, weight: nil, duration: nil, notes: "Full body push-ups"),
-            Exercise(name: "Pull-ups", sets: 3, reps: 8, weight: nil, duration: nil, notes: "Assisted if needed")
-        ]
-    )
-    
-    WorkoutDetailView(workout: sampleWorkout)
-        .environmentObject(WorkoutManager())
+//Preview
+struct WorkoutDetailView_Previews: PreviewProvider {
+    static var previews: some View {
+        let sampleWorkout = Workout(
+            name: "Upper Body Strength",
+            type: "Strength",
+            dayOfWeek: "Monday",
+            exercises: [
+                Exercise(name: "Push-ups", sets: 3, reps: 10, weight: nil, duration: nil, notes: "Full body push-ups"),
+                Exercise(name: "Pull-ups", sets: 3, reps: 8, weight: nil, duration: nil, notes: "Assisted if needed")
+            ]
+        )
+        
+        WorkoutDetailView(workout: sampleWorkout)
+            .environmentObject(WorkoutManager())
+    }
 } 

@@ -12,23 +12,30 @@ struct HistoryView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 24) {
-                    // Time Frame Selector
-                    TimeFrameSelector(selectedTimeFrame: $selectedTimeFrame)
-                    
-                    // Statistics Section
-                    StatisticsSection(selectedTimeFrame: selectedTimeFrame)
-                    
-                    // Completed Workouts Section
-                    CompletedWorkoutsSection(selectedTimeFrame: selectedTimeFrame)
-                    
-                    Spacer(minLength: 100)
+            GeometryReader { geometry in
+                ScrollView {
+                    VStack(spacing: 24) {
+                        // GitHub-style month grid
+                        MonthGridView()
+                        // Time Frame Selector
+                        TimeFrameSelector(selectedTimeFrame: $selectedTimeFrame)
+                        
+                        // Statistics Section
+                        StatisticsSection(selectedTimeFrame: selectedTimeFrame)
+                        
+                        // Completed Workouts Section
+                        CompletedWorkoutsSection(selectedTimeFrame: selectedTimeFrame)
+                        
+                        Spacer()
+                    }
+                    .frame(minHeight: geometry.size.height)
+                    .padding(.top)
                 }
-                .padding(.top)
+                .navigationTitle("Workout History")
             }
-            .navigationTitle("Workout History")
+            .ignoresSafeArea(.container, edges: .bottom)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 
@@ -281,6 +288,52 @@ struct EmptyHistoryView: View {
         .background(Color(.systemGray6))
         .cornerRadius(12)
         .padding(.horizontal)
+    }
+}
+
+// Add MonthGridView for GitHub-style contribution grid
+struct MonthGridView: View {
+    @EnvironmentObject var workoutManager: WorkoutManager
+    let columns = Array(repeating: GridItem(.fixed(16), spacing: 4), count: 7)
+    
+    var body: some View {
+        let calendar = Calendar.current
+        let today = Date()
+        let range = calendar.range(of: .day, in: .month, for: today) ?? (1..<29)
+        let components = calendar.dateComponents([.year, .month], from: today)
+        let firstOfMonth = calendar.date(from: components) ?? today
+        let weekdayOffset = calendar.component(.weekday, from: firstOfMonth) - 1 // 0 = Sunday
+        let days = (0..<(range.count)).map { day -> Date in
+            calendar.date(byAdding: .day, value: day, to: firstOfMonth)!
+        }
+        let paddedDays = Array(repeating: Date.distantPast, count: weekdayOffset) + days
+        let rows = Int(ceil(Double(paddedDays.count) / 7.0))
+        let gridDays = paddedDays + Array(repeating: Date.distantPast, count: rows * 7 - paddedDays.count)
+        
+        VStack(alignment: .leading, spacing: 8) {
+            Text("This Month")
+                .font(.headline)
+                .padding(.horizontal)
+            LazyVGrid(columns: columns, spacing: 4) {
+                ForEach(Array(gridDays.enumerated()), id: \.offset) { idx, date in
+                    if calendar.isDate(date, equalTo: Date.distantPast, toGranularity: .day) {
+                        Color.clear.frame(width: 16, height: 16)
+                    } else {
+                        let completed = workoutManager.isWorkoutCompleted(for: date)
+                        Rectangle()
+                            .fill(completed ? Color.green : Color(.systemGray5))
+                            .frame(width: 16, height: 16)
+                            .cornerRadius(3)
+                            .overlay(
+                                Text("\(calendar.component(.day, from: date))")
+                                    .font(.system(size: 8))
+                                    .foregroundColor(.gray.opacity(0.5))
+                            )
+                    }
+                }
+            }
+            .padding(.horizontal)
+        }
     }
 }
 
