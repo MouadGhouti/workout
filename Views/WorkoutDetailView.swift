@@ -15,25 +15,75 @@ struct WorkoutDetailView: View {
                         // Workout Header
                         WorkoutHeaderView(workout: workout)
                         
-                        // Exercises List
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text("Exercises")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                                .padding(.horizontal)
-                            
-                            ForEach(workout.exercises) { exercise in
-                                ExerciseRowView(
-                                    exercise: exercise,
-                                    isCompleted: completedExercises.contains(exercise.id)
-                                ) {
-                                    toggleExercise(exercise)
+                        if workout.type.lowercased() == "rest" && workout.exercises.count == 1 {
+                            VStack(alignment: .leading, spacing: 16) {
+                                Text("Exercises")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .padding(.horizontal)
+                                ForEach(workout.exercises) { exercise in
+                                    ExerciseRowView(
+                                        exercise: exercise,
+                                        isCompleted: completedExercises.contains(exercise.id)
+                                    ) {
+                                        toggleExercise(exercise)
+                                    }
                                 }
                             }
-                        }
-                        
-                        // Complete Workout Button
-                        if completedExercises.count == workout.exercises.count {
+                            Button(action: completeWorkout) {
+                                HStack {
+                                    Image(systemName: "checkmark.circle.fill")
+                                    Text("Complete Workout")
+                                        .fontWeight(.semibold)
+                                }
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.green)
+                                .cornerRadius(12)
+                            }
+                            .padding(.horizontal)
+                        } else if workout.exercises.isEmpty || workout.type.lowercased() == "rest" || workout.name.lowercased().contains("rest day") {
+                            VStack(spacing: 24) {
+                                Text("Rest Day")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .padding(.top, 32)
+                                Text("Take it easy and recover! You can still mark this day as completed.")
+                                    .font(.body)
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .padding(.horizontal)
+                                Button(action: completeWorkout) {
+                                    HStack {
+                                        Image(systemName: "checkmark.circle.fill")
+                                        Text("Mark Rest Day as Completed")
+                                            .fontWeight(.semibold)
+                                    }
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding()
+                                    .background(Color.green)
+                                    .cornerRadius(12)
+                                }
+                                .padding(.horizontal)
+                            }
+                        } else {
+                            // Exercises List
+                            VStack(alignment: .leading, spacing: 16) {
+                                Text("Exercises")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .padding(.horizontal)
+                                ForEach(workout.exercises) { exercise in
+                                    ExerciseRowView(
+                                        exercise: exercise,
+                                        isCompleted: completedExercises.contains(exercise.id)
+                                    ) {
+                                        toggleExercise(exercise)
+                                    }
+                                }
+                            }
                             Button(action: completeWorkout) {
                                 HStack {
                                     Image(systemName: "checkmark.circle.fill")

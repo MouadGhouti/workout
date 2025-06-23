@@ -2,7 +2,7 @@ import Foundation
 
 // MARK: - Workout Models
 struct Workout: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let name: String
     let type: String
     let dayOfWeek: String
@@ -12,7 +12,7 @@ struct Workout: Identifiable, Codable {
 }
 
 struct Exercise: Identifiable, Codable {
-    let id = UUID()
+    var id = UUID()
     let name: String
     let sets: Int
     let reps: Int

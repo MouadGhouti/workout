@@ -178,6 +178,9 @@ struct WorkoutPlanView: View {
 
 struct CurrentPlanSection: View {
     let plan: WorkoutPlan
+    @State private var selectedWorkout: Workout? = nil
+    @State private var showingDetail = false
+    @EnvironmentObject var workoutManager: WorkoutManager
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -189,9 +192,19 @@ struct CurrentPlanSection: View {
             VStack(spacing: 8) {
                 ForEach(plan.workouts) { workout in
                     WorkoutPlanRow(workout: workout)
+                        .onTapGesture {
+                            selectedWorkout = workout
+                            showingDetail = true
+                        }
                 }
             }
             .padding(.horizontal)
+        }
+        .sheet(isPresented: $showingDetail) {
+            if let workout = selectedWorkout {
+                WorkoutDetailView(workout: workout)
+                    .environmentObject(workoutManager)
+            }
         }
     }
 }

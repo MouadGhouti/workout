@@ -5,15 +5,18 @@ class WorkoutManager: ObservableObject {
     @Published var currentWeek: [WeekDay] = []
     @Published var workoutPlan: WorkoutPlan?
     @Published var completedWorkouts: [String: Date] = [:]
+    @Published var bestStreak: Int = 0
     
     private let userDefaults = UserDefaults.standard
     private let completedWorkoutsKey = "completedWorkouts"
     private let workoutPlanKey = "workoutPlan"
+    private let bestStreakKey = "bestStreak"
     
     init() {
         loadCompletedWorkouts()
         generateCurrentWeek()
         loadWorkoutPlan()
+        loadBestStreak()
     }
     
     // MARK: - Week Management
@@ -46,6 +49,7 @@ class WorkoutManager: ObservableObject {
         completedWorkouts[dateString] = Date()
         saveCompletedWorkouts()
         generateCurrentWeek() // Refresh the week view
+        updateBestStreak()
     }
     
     func isWorkoutCompleted(for date: Date) -> Bool {
@@ -115,8 +119,8 @@ class WorkoutManager: ObservableObject {
                 Exercise(name: "Warrior Poses", sets: 2, reps: 1, weight: nil, duration: 300, notes: "Hold each pose"),
                 Exercise(name: "Meditation", sets: 1, reps: 1, weight: nil, duration: 900, notes: "15 minutes")
             ]),
-            Workout(name: "Rest Day", type: "Rest", dayOfWeek: "Sunday", exercises: [
-                Exercise(name: "Light Stretching", sets: 1, reps: 1, weight: nil, duration: 600, notes: "10 minutes gentle stretching")
+            Workout(name: "Rest", type: "Rest", dayOfWeek: "Sunday", exercises: [
+                Exercise(name: "Rest", sets: 1, reps: 1, weight: nil, duration: nil, notes: "Take a break and recharge! You deserve it. 💪")
             ])
         ]
         
@@ -127,7 +131,7 @@ class WorkoutManager: ObservableObject {
             "Thursday": ["Core Workout"],
             "Friday": ["Full Body"],
             "Saturday": ["Yoga"],
-            "Sunday": ["Rest Day"]
+            "Sunday": ["Rest"]
         ]
         
         return WorkoutPlan(name: "Weekly Fitness Plan", workouts: defaultWorkouts, schedule: schedule)
@@ -153,5 +157,49 @@ class WorkoutManager: ObservableObject {
         let calendar = Calendar.current
         let dayName = calendar.weekdaySymbols[calendar.component(.weekday, from: date) - 1]
         return plan.workouts.filter { $0.dayOfWeek == dayName }
+    }
+    
+    // Helper to get WeekDay for any date
+    func getWeekDay(for date: Date) -> WeekDay {
+        let calendar = Calendar.current
+        let dayName = calendar.weekdaySymbols[calendar.component(.weekday, from: date) - 1]
+        let shortName = calendar.veryShortWeekdaySymbols[calendar.component(.weekday, from: date) - 1]
+        let dateString = formatDate(date)
+        let isCompleted = completedWorkouts[dateString] != nil
+        return WeekDay(name: dayName, shortName: shortName, date: date, isCompleted: isCompleted)
+    }
+    
+    // MARK: - Streak Calculation and Persistence
+    func calculateCurrentStreak() -> Int {
+        let calendar = Calendar.current
+        let sortedDates = completedWorkouts.keys.compactMap { dateStr in
+            let formatter = DateFormatter()
+            formatter.dateFormat = "yyyy-MM-dd"
+            return formatter.date(from: dateStr)
+        }.sorted(by: >)
+        guard let lastWorkoutDate = sortedDates.first else { return 0 }
+        var streak = 0
+        var currentDate = Date()
+        while sortedDates.contains(where: { calendar.isDate($0, inSameDayAs: currentDate) }) {
+            streak += 1
+            currentDate = calendar.date(byAdding: .day, value: -1, to: currentDate) ?? currentDate
+        }
+        return streak
+    }
+    
+    private func updateBestStreak() {
+        let currentStreak = calculateCurrentStreak()
+        if currentStreak > bestStreak {
+            bestStreak = currentStreak
+            saveBestStreak()
+        }
+    }
+    
+    private func saveBestStreak() {
+        userDefaults.set(bestStreak, forKey: bestStreakKey)
+    }
+    
+    private func loadBestStreak() {
+        bestStreak = userDefaults.integer(forKey: bestStreakKey)
     }
 } 

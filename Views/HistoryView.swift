@@ -95,14 +95,14 @@ struct StatisticsSection: View {
                 
                 StatCard(
                     title: "Current Streak",
-                    value: "\(currentStreak)",
+                    value: "\(workoutManager.calculateCurrentStreak())",
                     icon: "flame.fill",
                     color: .orange
                 )
                 
                 StatCard(
                     title: "Best Streak",
-                    value: "\(bestStreak)",
+                    value: "\(workoutManager.bestStreak)",
                     icon: "trophy.fill",
                     color: .yellow
                 )
@@ -130,34 +130,6 @@ struct StatisticsSection: View {
     private var completionRate: Int {
         let totalDays = selectedTimeFrame == .week ? 7 : (selectedTimeFrame == .month ? 30 : 365)
         return Int((Double(completedWorkoutsCount) / Double(totalDays)) * 100)
-    }
-    
-    private var currentStreak: Int {
-        calculateStreak()
-    }
-    
-    private var bestStreak: Int {
-        // This would need to be calculated from historical data
-        // For now, returning a placeholder
-        return max(currentStreak, 5)
-    }
-    
-    private func calculateStreak() -> Int {
-        let calendar = Calendar.current
-        let sortedDates = workoutManager.completedWorkouts.values.sorted(by: >)
-        
-        guard let lastWorkoutDate = sortedDates.first else { return 0 }
-        
-        var streak = 0
-        var currentDate = Date()
-        
-        while calendar.isDate(currentDate, inSameDayAs: lastWorkoutDate) || 
-              calendar.dateInterval(of: .day, for: currentDate)?.start == calendar.dateInterval(of: .day, for: lastWorkoutDate)?.start {
-            streak += 1
-            currentDate = calendar.date(byAdding: .day, value: -1, to: currentDate) ?? currentDate
-        }
-        
-        return streak
     }
 }
 

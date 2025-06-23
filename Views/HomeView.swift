@@ -5,12 +5,28 @@ struct HomeView: View {
     @State private var showingWorkoutDetail = false
     @State private var selectedWorkout: Workout? = nil
     @State private var selectedDate: Date = Calendar.current.startOfDay(for: Date())
+    @State private var weekOffset: Int = 0
     
     var body: some View {
         NavigationView {
             GeometryReader { geometry in
                 ScrollView {
                     VStack(spacing: 24) {
+                        // Week Navigation
+                        HStack {
+                            Button(action: { weekOffset -= 1; updateSelectedDateForWeek() }) {
+                                Image(systemName: "chevron.left")
+                            }
+                            Spacer()
+                            Text(weekTitle)
+                                .font(.headline)
+                            Spacer()
+                            Button(action: { weekOffset += 1; updateSelectedDateForWeek() }) {
+                                Image(systemName: "chevron.right")
+                            }
+                        }
+                        .padding(.horizontal)
+                        
                         // Week Progress Section
                         VStack(alignment: .leading, spacing: 16) {
                             Text("This Week")
@@ -18,7 +34,7 @@ struct HomeView: View {
                                 .fontWeight(.bold)
                                 .padding(.horizontal)
                             
-                            WeekProgressView(selectedDate: $selectedDate)
+                            WeekProgressView(selectedDate: $selectedDate, weekOffset: weekOffset)
                         }
                         
                         // Today's Workout Section
@@ -58,18 +74,45 @@ struct HomeView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
+    
+    private func updateSelectedDateForWeek() {
+        let calendar = Calendar.current
+        let today = Date()
+        let weekStart = calendar.date(byAdding: .weekOfYear, value: weekOffset, to: calendar.startOfDay(for: today)) ?? today
+        if !calendar.isDate(selectedDate, equalTo: weekStart, toGranularity: .weekOfYear) {
+            selectedDate = weekStart
+        }
+    }
+    
+    private var weekTitle: String {
+        let calendar = Calendar.current
+        let today = Date()
+        let weekStart = calendar.date(byAdding: .weekOfYear, value: weekOffset, to: calendar.startOfDay(for: today)) ?? today
+        let weekEnd = calendar.date(byAdding: .day, value: 6, to: weekStart) ?? weekStart
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return "\(formatter.string(from: weekStart)) - \(formatter.string(from: weekEnd))"
+    }
 }
 
 struct WeekProgressView: View {
     @EnvironmentObject var workoutManager: WorkoutManager
     @Binding var selectedDate: Date
+    var weekOffset: Int
     
     var body: some View {
+        let calendar = Calendar.current
+        let today = Date()
+        let weekStart = calendar.date(byAdding: .weekOfYear, value: weekOffset, to: calendar.startOfDay(for: today)) ?? today
+        let days = (0..<7).map { offset in
+            calendar.date(byAdding: .day, value: offset, to: weekStart) ?? weekStart
+        }
         HStack(spacing: 8) {
-            ForEach(workoutManager.currentWeek) { day in
-                DayBox(day: day, isSelected: Calendar.current.isDate(day.date, inSameDayAs: selectedDate))
+            ForEach(days, id: \ .self) { date in
+                let day = workoutManager.getWeekDay(for: date)
+                DayBox(day: day, isSelected: Calendar.current.isDate(date, inSameDayAs: selectedDate))
                     .onTapGesture {
-                        selectedDate = day.date
+                        selectedDate = date
                     }
             }
         }
