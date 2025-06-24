@@ -11,7 +11,7 @@ struct HistoryView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             GeometryReader { geometry in
                 ScrollView {
                     VStack(spacing: 24) {
@@ -33,9 +33,7 @@ struct HistoryView: View {
                 }
                 .navigationTitle("Workout History")
             }
-            .ignoresSafeArea(.container, edges: .bottom)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
 

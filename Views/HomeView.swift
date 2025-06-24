@@ -8,7 +8,7 @@ struct HomeView: View {
     @State private var weekOffset: Int = 0
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             GeometryReader { geometry in
                 ScrollView {
                     VStack(spacing: 24) {
@@ -70,9 +70,7 @@ struct HomeView: View {
                     }
                 }
             }
-            .ignoresSafeArea(.container, edges: .bottom)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private func updateSelectedDateForWeek() {

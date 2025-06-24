@@ -24,7 +24,7 @@ struct ContentView: View {
                 }
         }
         .accentColor(.green)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .ignoresSafeArea()
     }
 }
 

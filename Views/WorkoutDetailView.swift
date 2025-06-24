@@ -8,7 +8,7 @@ struct WorkoutDetailView: View {
     @State private var showingCompletionAlert = false
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             GeometryReader { geometry in
                 ScrollView {
                     VStack(spacing: 20) {
@@ -121,9 +121,7 @@ struct WorkoutDetailView: View {
                     Text("Great job! Your workout has been marked as completed.")
                 }
             }
-            .ignoresSafeArea(.container, edges: .bottom)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private func toggleExercise(_ exercise: Exercise) {

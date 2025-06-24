@@ -8,7 +8,7 @@ struct WorkoutPlanView: View {
     @State private var alertMessage = ""
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             GeometryReader { geometry in
                 ScrollView {
                     VStack(spacing: 24) {
@@ -45,9 +45,7 @@ struct WorkoutPlanView: View {
                     Text(alertMessage)
                 }
             }
-            .ignoresSafeArea(.container, edges: .bottom)
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     private func importWorkoutPlan() {
@@ -271,27 +269,33 @@ struct InstructionsSection: View {
                 .font(.title2)
                 .fontWeight(.bold)
                 .padding(.horizontal)
+                .textSelection(.enabled)
             
             VStack(alignment: .leading, spacing: 12) {
                 Text("Use the following format:")
                     .font(.headline)
+                    .textSelection(.enabled)
                 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("# Workout Name")
                         .font(.system(.body, design: .monospaced))
                         .foregroundColor(.blue)
+                        .textSelection(.enabled)
                     
                     Text("@ Day of Week")
                         .font(.system(.body, design: .monospaced))
                         .foregroundColor(.blue)
+                        .textSelection(.enabled)
                     
                     Text("- Exercise Name, sets: 3, reps: 10, weight: 20kg")
                         .font(.system(.body, design: .monospaced))
                         .foregroundColor(.blue)
+                        .textSelection(.enabled)
                     
                     Text("- Another Exercise, sets: 3, reps: 15")
                         .font(.system(.body, design: .monospaced))
                         .foregroundColor(.blue)
+                        .textSelection(.enabled)
                 }
                 .padding()
                 .background(Color(.systemGray6))
